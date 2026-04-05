@@ -15,7 +15,7 @@ import { CommonModule } from '../common/common.module';
         JwtModule.register({
             global: true,
             secret: process.env.JWT_SECRET || 'miClaveSecretaSuperSegura2026!',
-            signOptions: { expiresIn: '8h' },
+            signOptions: { expiresIn: '5m' },
         }),
     ],
     controllers: [AuthController],
