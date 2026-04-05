@@ -1,31 +1,26 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsuariosModule } from './usuarios/usuarios.module';
+import { AuthModule } from './auth/auth.module';
+import { CommonModule } from './common/common.module';
+import { Usuario } from './usuarios/entities/usuario.entity';
 
 @Module({
-  imports: [
-      // 2. Cargas las variables de entorno globalmente
-      ConfigModule.forRoot({ isGlobal: true }),
-
-      // 3. Configuras la base de datos leyendo el .env
-      TypeOrmModule.forRootAsync({
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (configService: ConfigService) => ({
-          type: 'mysql',
-          host: configService.get<string>('DB_HOST'),
-          port: configService.get<number>('DB_PORT'),
-          username: configService.get<string>('DB_USERNAME'),
-          password: configService.get<string>('DB_PASSWORD'),
-          database: configService.get<string>('DB_DATABASE'),
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: true, // Crea las tablas automáticamente (¡Solo usar en desarrollo!)
+    imports: [
+        TypeOrmModule.forRoot({
+            type: 'mysql',
+            host: 'localhost',
+            port: 3306,
+            username: 'root',
+            password: '123456789',
+            database: 'reservasDeportivas_db',
+            entities: [Usuario],
+            autoLoadEntities: true,
+            synchronize: true,   
         }),
-      }),
+        UsuariosModule,
+        AuthModule,
+        CommonModule,
     ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
