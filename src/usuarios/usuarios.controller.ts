@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Request, ForbiddenException } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
@@ -10,6 +10,14 @@ import { Roles } from '../auth/decorators/roles.decorator';
 export class UsuariosController {
     constructor(private readonly usuariosService: UsuariosService) {}
 
+
+
+    @Get('me')
+    @UseGuards(JwtAuthGuard) // Solo requiere estar autenticado
+    async getMiPerfil(@Request() req) {
+        const userId = req.user.userId; // El ID del usuario viene del token (se llama 'userId' en el payload)
+        return this.usuariosService.findOne(userId);
+    }
     // POST /usuarios - Registro cualquiera puede registrar
     @Post()
     create(@Body() createUsuarioDto: CreateUsuarioDto) {
@@ -55,4 +63,14 @@ export class UsuariosController {
         const codigo = await this.usuariosService.generarCodigoCompra(id);
         return { codigoCompra: codigo };
     }
+
+    //PARA HCER ADMID A UNO ES TEMPORAL 
+    @Post('hacer-admin/:id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('admin')
+    async hacerAdmin(@Param('id', ParseIntPipe) id: number) {
+        return this.usuariosService.update(id, { rol: 'admin' });
+    }
+
+    
 }

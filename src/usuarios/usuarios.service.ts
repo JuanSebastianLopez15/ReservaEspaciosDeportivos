@@ -13,10 +13,9 @@ export class UsuariosService {
     ) {}
 
     async create(createUsuarioDto: CreateUsuarioDto) {
-    // Verificación explícita (opcional, pues el DTO ya fallará antes)
-    if (!createUsuarioDto.contrasena) {
-        throw new BadRequestException('La contraseña es obligatoria');
-    }
+        if (!createUsuarioDto.contrasena) {
+            throw new BadRequestException('La contraseña es obligatoria');
+        }
         const existe = await this.usuarioRepository.findOne({
             where: { correo: createUsuarioDto.correo },
         });
@@ -54,12 +53,10 @@ export class UsuariosService {
 
     async update(id: number, updateUsuarioDto: any): Promise<Usuario> {
         const usuario = await this.findOne(id);
-
         if (updateUsuarioDto.contrasena) {
             const saltRounds = 10;
             updateUsuarioDto.contrasena = await bcrypt.hash(updateUsuarioDto.contrasena, saltRounds);
         }
-
         Object.assign(usuario, updateUsuarioDto);
         return await this.usuarioRepository.save(usuario);
     }
@@ -80,5 +77,9 @@ export class UsuariosService {
         usuario.codigoCompra = codigo;
         await this.usuarioRepository.save(usuario);
         return codigo;
+    }
+
+    async findByRefreshToken(refreshToken: string): Promise<Usuario | null> {
+        return await this.usuarioRepository.findOne({ where: { refreshToken } });
     }
 }

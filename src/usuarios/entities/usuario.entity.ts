@@ -37,4 +37,7 @@ export class Usuario {
 
     @Column({ default: false })
   primerInicioVerificado!: boolean; 
+
+  @Column({ nullable: true })
+  refreshToken!: string | null;
 }
