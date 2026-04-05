@@ -60,9 +60,11 @@ export class AuthService {
             email: usuario.correo,
             rol: usuario.rol,
         });
+        const refreshToken = uuidv4();
 
         return {
             access_token: token,
+            refresh_token: refreshToken,
             usuario: {
                 id: usuario.id,
                 nombre: usuario.nombre,
