@@ -1,15 +1,40 @@
-import { Controller, Post, UseGuards, Request } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { ReservasService } from './reservas.service';
 
-@Controller('reservas')
+@Controller('reservas') // Esta línea es la que define la URL http://localhost:3000/reservas
 export class ReservasController {
-  
+  constructor(private readonly reservasService: ReservasService) {}
+
   @Post()
-  @UseGuards(JwtAuthGuard) 
-  async crearReserva(@Request() req) {
-    // req.user contiene la info del token (userId, email, rol)
-    const userId = req.user.userId;
-    // Lógica para crear reserva solo para este usuario
-    return { message: `Reserva creada por usuario ${userId}` };
+  async create(
+    @Body('usuarioId') usuarioId: number,
+    @Body('escenarioId') escenarioId: number,
+    @Body('fecha') fecha: string,
+    @Body('horaInicio') horaInicio: string,
+    @Body('horaFin') horaFin: string,
+  ) {
+    // Aquí mapeamos los datos del Body directamente al servicio
+    return await this.reservasService.create({
+      usuarioId,
+      escenarioId,
+      fecha,
+      horaInicio,
+      horaFin,
+    });
+  }
+
+  @Get()
+  findAll() {
+    return this.reservasService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.reservasService.findOne(id);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.reservasService.remove(id);
   }
 }

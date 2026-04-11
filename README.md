@@ -1,98 +1,142 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# ⚽ API de Reservas Deportivas - Módulo de Pagos y Notificaciones (Estudiante C)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este repositorio contiene el backend de un sistema de reservas deportivas construido con **NestJS**. Este submódulo en específico gestiona el procesamiento de pagos, el cálculo de totales recaudados y la integración con **Twilio** para notificaciones automáticas vía WhatsApp.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 📦 1. Dependencias Instaladas
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Para que este módulo funcione correctamente, se instalaron las siguientes librerías adicionales en el proyecto de NestJS:
 
-## Project setup
+**1. TypeORM y MySQL** (Para la conexión a la base de datos):
+\`\`\`bash
+npm install @nestjs/typeorm typeorm mysql2
+\`\`\`
 
-```bash
-$ npm install
-```
+**2. ConfigModule** (Para leer las variables de entorno del archivo `.env`):
+\`\`\`bash
+npm install @nestjs/config
+\`\`\`
 
-## Compile and run the project
+**3. SDK de Twilio** (Para el envío de notificaciones de WhatsApp/SMS):
+\`\`\`bash
+npm install twilio
+\`\`\`
 
-```bash
-# development
-$ npm run start
+*(Opcional) Comandos CLI de NestJS utilizados para generar la estructura:*
+\`\`\`bash
+nest g resource pagos
+nest g module twilio
+nest g service twilio
+\`\`\`
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## ⚙️ 2. Configuración del Entorno (.env)
 
-## Run tests
+Para correr este proyecto localmente, debes crear un archivo llamado `.env` en la raíz del proyecto (al mismo nivel que `package.json`) y agregar las siguientes variables:
 
-```bash
-# unit tests
-$ npm run test
+\`\`\`env
+# Configuración de Base de Datos
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=reservas_deportivas
+DB_USERNAME=root
+DB_PASSWORD=root
 
-# e2e tests
-$ npm run test:e2e
+# Credenciales de Twilio
+TWILIO_ACCOUNT_SID=AC67d347e5e93bb82fed30929c7805663f
+TWILIO_AUTH_TOKEN=1669b7e2ace4df08238ce655cb8e3df4
+TWILIO_PHONE_NUMBER=whatsapp:+14155238886
+\`\`\`
 
-# test coverage
-$ npm run test:cov
-```
+---
 
-## Deployment
+## 🚀 3. Cómo Ejecutar el Proyecto
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+1. Asegúrate de tener **MySQL** corriendo en el puerto `3306`.
+2. Instala los módulos de Node (si acabas de clonar el repositorio):
+   \`\`\`bash
+   npm install
+   \`\`\`
+3. Inicia el servidor en modo desarrollo:
+   \`\`\`bash
+   npm run start:dev
+   \`\`\`
+   *La base de datos creará las tablas automáticamente gracias a la opción `synchronize: true` de TypeORM.*
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+## 📡 4. Estructura de los Endpoints
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+A continuación, se detalla cómo interactuar con los endpoints del módulo de pagos utilizando Postman o Insomnia.
 
-## Resources
+### 💳 1. Procesar Pago y Confirmar Reserva
+Recibe los datos del pago, actualiza el estado de la reserva a "confirmada" en la base de datos y envía un mensaje de WhatsApp al cliente.
 
-Check out a few resources that may come in handy when working with NestJS:
+* **Método:** `POST`
+* **URL:** `http://localhost:3000/pagos/procesar`
+* **Body (JSON):**
+  \`\`\`json
+  {
+  "reservaId": 1,
+  "monto": 50000,
+  "metodoPago": "tarjeta"
+  }
+  \`\`\`
+* **Respuesta Exitosa (201 Created):**
+  \`\`\`json
+  {
+  "message": "Pago procesado y reserva confirmada",
+  "pagoId": 1
+  }
+  \`\`\`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### 📊 2. Obtener Totales y Estadísticas
+Calcula la suma total del dinero recaudado y la cantidad de pagos procesados directamente desde la base de datos.
 
-## Support
+* **Método:** `GET`
+* **URL:** `http://localhost:3000/pagos/totales`
+* **Respuesta Exitosa (200 OK):**
+  \`\`\`json
+  {
+  "mensaje": "Reporte de totales generado",
+  "estadisticas": {
+  "totalDineroRecaudado": 150000,
+  "cantidadReservasPagadas": 3
+  }
+  }
+  \`\`\`
+* ### 🏟️ 3. Crear un Escenario Deportivo
+Registra una nueva cancha o escenario disponible para ser reservado.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+* **Método:** `POST`
+* **URL:** `http://localhost:3000/escenarios`
+* **Body (JSON):**
+  \`\`\`json
+  {
+  "nombre": "Cancha Sintética Los Campeones",
+  "deporte": "Fútbol",
+  "capacidadMaxima": 14,
+  "horaApertura": "08:00:00",
+  "horaCierre": "22:00:00",
+  "precioPorHora": 50000.00
+  }
+  \`\`\`
 
-## Stay in touch
+### 📅 4. Crear una Reserva
+Genera una nueva reserva vinculando a un usuario con un escenario en una fecha y hora específicas. El estado inicial suele ser "pendiente".
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+* **Método:** `POST`
+* **URL:** `http://localhost:3000/reservas`
+* **Body (JSON):**
+  \`\`\`json
+  {
+  "usuarioId": 1,
+  "escenarioId": 1,
+  "fecha": "2026-04-15",
+  "horaInicio": "10:00:00",
+  "horaFin": "11:00:00"
+  }
+  \`\`\`

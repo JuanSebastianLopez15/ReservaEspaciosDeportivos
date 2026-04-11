@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsuariosService } from '../usuarios/usuarios.service';
-import { MailService } from '../common/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -9,7 +8,6 @@ export class AuthService {
     constructor(
         private usuarioservice: UsuariosService,
         private jwtService: JwtService,
-        private mailService: MailService,
     ) {}
 
     async loginPaso1(correo: string, contrasena: string) {
@@ -28,7 +26,7 @@ export class AuthService {
             usuario.codigoVerificacion = codigo;
             await this.usuarioservice.update(usuario.id, { codigoVerificacion: codigo });
 
-            await this.mailService.enviarCodigoVerificacion(usuario.correo, codigo);
+            //await this.mailService.enviarCodigoVerificacion(usuario.correo, codigo);
 
             return {
                 mensaje: 'Se ha enviado un código de verificación a tu correo',
