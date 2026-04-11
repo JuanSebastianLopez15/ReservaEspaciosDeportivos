@@ -46,8 +46,8 @@ DB_USERNAME=root
 DB_PASSWORD=root
 
 # Credenciales de Twilio
-TWILIO_ACCOUNT_SID=AC67d347e5e93bb82fed30929c7805663f
-TWILIO_AUTH_TOKEN=1669b7e2ace4df08238ce655cb8e3df4
+TWILIO_ACCOUNT_SID=tu_account_sid_aqui -> se las pase al grupo
+TWILIO_AUTH_TOKEN=tu_auth_token_aqui -> se las pase al grupo
 TWILIO_PHONE_NUMBER=whatsapp:+14155238886
 \`\`\`
 
