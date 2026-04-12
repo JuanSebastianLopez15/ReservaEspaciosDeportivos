@@ -11,7 +11,7 @@ import { CommonModule } from '../common/common.module';
     imports: [
         UsuariosModule,
         PassportModule,
-        CommonModule, // para MailService
+        CommonModule,
         JwtModule.register({
             global: true,
             secret: process.env.JWT_SECRET || 'miClaveSecretaSuperSegura2026!',

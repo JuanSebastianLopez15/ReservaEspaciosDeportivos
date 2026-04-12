@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsuariosService } from '../usuarios/usuarios.service';
+import { MailService } from '../common/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class AuthService {
     constructor(
         private usuarioservice: UsuariosService,
         private jwtService: JwtService,
+        private mailService: MailService,
     ) {}
 
     async loginPaso1(correo: string, contrasena: string) {
@@ -23,10 +25,10 @@ export class AuthService {
 
         if (!usuario.primerInicioVerificado) {
             const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-            usuario.codigoVerificacion = codigo;
             await this.usuarioservice.update(usuario.id, { codigoVerificacion: codigo });
 
-            //await this.mailService.enviarCodigoVerificacion(usuario.correo, codigo);
+            // Enviar codigo al correo
+            await this.mailService.enviarCodigoVerificacion(usuario.correo, codigo);
 
             return {
                 mensaje: 'Se ha enviado un código de verificación a tu correo',
@@ -35,9 +37,11 @@ export class AuthService {
             };
         }
 
-        if (usuario.primerInicioVerificado) {
-        const accessToken = await this.jwtService.signAsync({ sub: usuario.id, email: usuario.correo, rol: usuario.rol }, { expiresIn: '5m' });
-        const refreshToken = uuidv4(); // o usar JWT con más expiración
+        const accessToken = await this.jwtService.signAsync(
+            { sub: usuario.id, email: usuario.correo, rol: usuario.rol },
+            { expiresIn: '5m' }
+        );
+        const refreshToken = uuidv4();
         await this.usuarioservice.update(usuario.id, { refreshToken });
         return {
             access_token: accessToken,
@@ -51,39 +55,16 @@ export class AuthService {
         };
     }
 
-        
-
-        const token = await this.jwtService.signAsync({
-            sub: usuario.id,
-            email: usuario.correo,
-            rol: usuario.rol,
-        });
-        const refreshToken = uuidv4();
-
-        return {
-            access_token: token,
-            refresh_token: refreshToken,
-            usuario: {
-                id: usuario.id,
-                nombre: usuario.nombre,
-                correo: usuario.correo,
-                rol: usuario.rol,
-            },
-        };
-    }
-
     async verificarCodigo(usuarioId: number, codigo: string) {
         const usuario = await this.usuarioservice.findOne(usuarioId);
         if (!usuario || usuario.codigoVerificacion !== codigo) {
             throw new UnauthorizedException('Código incorrecto o expirado');
         }
 
-        usuario.primerInicioVerificado = true;
-        usuario.codigoVerificacion = "";
         await this.usuarioservice.update(usuario.id, {
-    primerInicioVerificado: true,
-    codigoVerificacion: "",  
-    });
+            primerInicioVerificado: true,
+            codigoVerificacion: "",
+        });
 
         const token = await this.jwtService.signAsync({
             sub: usuario.id,
@@ -101,7 +82,6 @@ export class AuthService {
             },
         };
     }
-
 
     async refreshAccessToken(refreshToken: string) {
         const usuario = await this.usuarioservice.findByRefreshToken(refreshToken);
@@ -109,11 +89,7 @@ export class AuthService {
             throw new UnauthorizedException('Refresh token inválido o expirado');
         }
         const newAccessToken = await this.jwtService.signAsync(
-            {
-                sub: usuario.id,
-                email: usuario.correo,
-                rol: usuario.rol,
-            },
+            { sub: usuario.id, email: usuario.correo, rol: usuario.rol },
             { expiresIn: '5m' }
         );
         return { access_token: newAccessToken };
