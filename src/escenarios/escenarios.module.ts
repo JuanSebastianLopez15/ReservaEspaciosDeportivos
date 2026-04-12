@@ -8,5 +8,6 @@ import { Escenario } from './entities/escenario.entity';
   imports: [TypeOrmModule.forFeature([Escenario])],
   controllers: [EscenariosController],
   providers: [EscenariosService],
+  exports: [EscenariosService],
 })
 export class EscenariosModule {}

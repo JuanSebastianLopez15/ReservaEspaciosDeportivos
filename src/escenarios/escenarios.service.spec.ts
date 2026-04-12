@@ -1,18 +1,33 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { EscenariosService } from './escenarios.service';
+import { CreateEscenarioDto } from './dto/create-escenario.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
-describe('EscenariosService', () => {
-  let service: EscenariosService;
+@Controller('escenarios')
+export class EscenariosController {
+  constructor(private readonly escenariosService: EscenariosService) {}
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [EscenariosService],
-    }).compile();
+  // POST /escenarios - Solo admin puede crear escenarios
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  create(@Body() createEscenarioDto: CreateEscenarioDto) {
+    return this.escenariosService.create(createEscenarioDto);
+  }
 
-    service = module.get<EscenariosService>(EscenariosService);
-  });
+  // GET /escenarios - Cualquier usuario logueado puede ver los escenarios
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  findAll() {
+    return this.escenariosService.findAll();
+  }
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+  // GET /escenarios/:id - Ver un escenario por ID
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.escenariosService.findOne(id);
+  }
+}
