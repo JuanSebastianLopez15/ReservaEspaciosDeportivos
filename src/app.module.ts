@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
@@ -15,20 +15,29 @@ import { Pago } from './pagos/entities/pago.entity';
 
 @Module({
     imports: [
+        // 1. Cargar variables de entorno globalmente
         ConfigModule.forRoot({
-            isGlobal: true,
+            isGlobal: true,      // Para que esté disponible en toda la app
+            envFilePath: '.env', // Ruta del archivo .env (por defecto es '.env')
         }),
-        TypeOrmModule.forRoot({
-            type: 'mysql',
-            host: 'localhost',
-            port: 3306,
-            username: 'root',
-            password: 'root',
-            database: 'reservas_deportivas',
-            entities: [Usuario, Escenario, Reserva, Pago],//tablas de mi proyecto
-            autoLoadEntities: true,
-            synchronize: true,   
+
+        // 2. Configurar TypeORM de forma asíncrona usando ConfigService
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+                type: 'mysql',
+                host: configService.get<string>('DB_HOST'),
+                port: configService.get<number>('DB_PORT'),
+                username: configService.get<string>('DB_USERNAME'),
+                password: configService.get<string>('DB_PASSWORD'),
+                database: configService.get<string>('DB_DATABASE'),
+                entities: [Usuario, Escenario, Reserva, Pago],
+                autoLoadEntities: true,
+                synchronize: true,   // Solo desarrollo. En producción usar migraciones.
+            }),
         }),
+
         UsuariosModule,
         AuthModule,
         CommonModule,
@@ -36,7 +45,6 @@ import { Pago } from './pagos/entities/pago.entity';
         ReservasModule,
         PagosModule,
         TwilioModule,
-
     ],
 })
 export class AppModule {}
